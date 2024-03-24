@@ -7,11 +7,13 @@
 #SBATCH --output=./logs/compilation%j.out
 set -a; source .env set +a
 
-module load "${MPI_MODULE}"
+module load "$MPI_MODULE"
 
+rm -r ./osu
 mkdir osu
 wget -qO- https://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-7.3.tar.gz | tar xvz -C ./osu
 cd ./osu/*/ || exit
-./configure CC=mpicc CXX=mpicxx --prefix="${COMPILED_PATH}" 
+./configure CC=mpicc CXX=mpicxx --prefix="${OSU_COMPILED_PATH}"
 make 
 make install
+cd ../..
