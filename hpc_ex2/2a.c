@@ -35,7 +35,7 @@ int main() {
         MPI_Recv(&buf, 1, MPI_INT, after, after, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         res[(after+i) % world_size] = buf;
     }
-    if (world_rank == 0) {
+    if (world_rank == 1) {
         FILE *fp;
         fp = fopen("all_stuffs.txt", "w");
         write_arr(res, world_size, fp);
