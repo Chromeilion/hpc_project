@@ -7,7 +7,7 @@
 // How many times to iterate the threshold T
 double NO_T_STEPS = 3;
 double T_MAX = 1;
-double T_BASE = 2;
+double T_BASE = 3;
 
 // Storage for a single pixel coordinate
 typedef struct {
@@ -19,7 +19,6 @@ typedef struct {
 // A semifinished pixel. Useful for caching.
 typedef struct {
     pixel *pxl; // Actual pixel object
-    unsigned int idx; // Location of the pixel in the pixel array
     unsigned int iter_no; // The current iteration of the pixel
     bool completed; // Whether the pixel has been fully computed
     complex double c_data; // The computed complex value of the pixel
@@ -86,31 +85,26 @@ unsigned short int in_m(complex double *z,
 }
 
 // Check whether a given pixel is in the set and return a bounded output.
-unsigned char pxl_in_m(unfinished_pixel* pxl,
-                       const unsigned int *T,
-                       const complex double *bottom_left) {
-    const complex double *z_val = &pxl->z_data;
+void pxl_in_m(unfinished_pixel* pxl,
+                       const unsigned int *T) {
+    complex double *z_val = &pxl->z_data;
     const complex double *c_val = &pxl->c_data;
     unsigned int iter_to_do = *T - pxl->iter_no;
     unsigned short int iter = in_m(z_val, c_val, iter_to_do);
     pxl->iter_no += iter;
-    unsigned char scaled = (unsigned char)round((double)pxl->iter_no * 255 / *T);
-    return scaled;
 }
 
 // Run all Mandelbrot set calculations on the provided array.
 unsigned int run_calculations(unfinished_pixel** incomplete,
                               const complex double *bottom_left,
                               const unsigned int arr_size,
-                              const unsigned int *T) {
+                              const unsigned int *T,
+                              const unsigned int *max_iters) {
     unsigned int c = 0;
-#pragma omp parallel for default(none) shared(T, bottom_left, arr_size, incomplete) reduction(+:c)
+#pragma omp parallel for default(none) shared(T, bottom_left, arr_size, incomplete, max_iters) reduction(+:c)
     for (int i = 0; i < arr_size; ++i) {
         unfinished_pixel* current_pixel = incomplete[i];
-        current_pixel->pxl->data = pxl_in_m(
-                current_pixel,
-                T,
-                bottom_left);
+        pxl_in_m(current_pixel, T);
         if (current_pixel->iter_no < *T) {
             current_pixel->completed = true;
             c += 1;
@@ -121,12 +115,12 @@ unsigned int run_calculations(unfinished_pixel** incomplete,
 
 // Run all calculations while iteratively increasing the threshold value.
 bool run_calculations_iter(pixel *arr,
-                          const complex double *bottom_left,
-                          const complex double *top_right,
-                          const int n_x,
-                          const int n_y,
-                          const int arr_size,
-                          const unsigned int *T) {
+                           const complex double *bottom_left,
+                           const complex double *top_right,
+                           const int n_x,
+                           const int n_y,
+                           const int arr_size,
+                           const unsigned int *T) {
     const double x_range = creal(*top_right) - creal(*bottom_left);
     const double x_increment = x_range / n_x;
     const double y_range = cimag(*top_right) - cimag(*bottom_left);
@@ -138,36 +132,44 @@ bool run_calculations_iter(pixel *arr,
     unfinished_pixel** job_array =
             (unfinished_pixel**)calloc(arr_size, sizeof(unfinished_pixel*));
     for (unsigned int i = 0; i < arr_size; ++i) {
-        complex double z_d = *bottom_left + arr[i].x * x_increment +
+        complex double c_d = *bottom_left + arr[i].x * x_increment +
                 arr[i].y * y_increment * I;
         unfinished_pixels[i] = (unfinished_pixel) {
-                .completed = false, .pxl = &arr[i], .iter_no = 0, .c_data = 0,
-                .z_data = z_d
+                .completed = false, .pxl = &arr[i], .iter_no = 0, .c_data = c_d,
+                .z_data = 0
         };
         job_array[i] = &unfinished_pixels[i];
     }
     unsigned int current_iter;
     unsigned int prev_job_size = arr_size;
     unsigned int completed;
+    // Would love to multithread this but with the current implementation
+    // it would go horribly.
     for (unsigned int j = 0; j <= NO_T_STEPS; ++j) {
         current_iter = (unsigned int)round(*T * t_func(j));
         completed = run_calculations(job_array,
                                      bottom_left,
                                      prev_job_size,
-                                     &current_iter);
+                                     &current_iter,
+                                     T);
         unsigned int counter = 0;
         for (unsigned int i = 0; i < prev_job_size; ++i) {
-            unfinished_pixel* item = job_array[i];
-            if (!item->completed) {
-                job_array[counter] = item;
+            if (!job_array[i]->completed) {
+                job_array[counter] = job_array[i];
                 counter += 1;
                 if (counter >= prev_job_size - completed) { break; }
             }
         }
         prev_job_size -= completed;
     }
-    free(unfinished_pixels);
     free(job_array);
+#pragma omp for
+    for (unsigned int i = 0; i < arr_size; ++i) {
+        unfinished_pixels[i].pxl->data =
+                (unsigned char)round((double)unfinished_pixels[i].iter_no *
+                ((double)255 / (double)*T));
+    }
+    free(unfinished_pixels);
     return 0;
 }
 
@@ -213,8 +215,8 @@ int main(int argc, char *argv[]) {
                "small!!!");
         return 1;
     }
-    const int n_x = n_x_;
-    const int n_y = n_y_;
+    const int n_x = (const int)n_x_;
+    const int n_y = (const int)n_y_;
 
     const float x_l = strtof(argv[3], NULL);
     const float y_l = strtof(argv[4], NULL);
@@ -226,7 +228,7 @@ int main(int argc, char *argv[]) {
                "zero!!!");
         return 1;
     }
-    const unsigned short int i_max = i_max_;
+    const unsigned int i_max = i_max_;
 
     complex double bottom_left = x_l + y_l*I;
     complex double top_right = x_r + y_r*I;

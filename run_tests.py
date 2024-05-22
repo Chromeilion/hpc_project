@@ -39,29 +39,36 @@ def main(osu_loc: Optional[str] = None, *_, **__):
 
     osu_path = Path(osu_loc)
     base_command = [
-        "mpirun", "--map-by", "core", "--mca",
+        "mpirun", "--map-by", "NODE", "--mca",
         "coll_tuned_use_dynamic_rules", "true", "--mca",
         "coll_tuned_bcast_algorithm"
     ]
     algorithms = ["0", "2", "3"]
 
     tasks = ["osu_bcast", "osu_scatter"]
-    no_its = 1
+    no_its = 4
     saveloc = "./the_results_of_osu.json"
-    no_cpus = int(os.environ["SLURM_JOB_CPUS_PER_NODE"])
+    no_cpus = int(os.environ["SLURM_NTASKS_PER_NODE"])
 
     resdic = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for task in tasks:
+        print(f"Doing task: {task}")
         for alg in algorithms:
-            for no_processes in range(2, no_cpus+1):
+            print(f"Testing algorithm: {alg}")
+            for no_processes in range(2, (no_cpus*2)+1, 2):
+                print(f"No processes: {no_processes}")
                 for _ in range(no_its):
-                    command = base_command+[alg]+["-n", str(no_processes)]+[osu_path/task]
+                    command = (
+                            base_command+[alg] +
+                            ["-n", str(no_processes)]+[osu_path/task]
+                    )
                     result, _ = subprocess.Popen(
                         command,
                         stdout=subprocess.PIPE,
                         env=os.environ
                     ).communicate()
-                    resdic[task][alg][no_processes].append(parse_osu_output(result))
+                    parsed = parse_osu_output(result)
+                    resdic[task][alg][no_processes].append(parsed)
 
     with open(saveloc, 'w') as f:
         json.dump(resdic, f)
