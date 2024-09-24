@@ -1,4 +1,4 @@
-#HPC Project
+# HPC Project
 By Uros Zivanovic
 All files for each respective exercise are located in their respective folder.
 
