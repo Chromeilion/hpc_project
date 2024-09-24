@@ -5,7 +5,7 @@
 #SBATCH --ntasks=48
 #SBATCH --exclusive
 #SBATCH --mem=15gb
-#SBATCH --time=00:15:00
+#SBATCH --time=01:00:00
 #SBATCH --output=./logs/run_out%j.out
 set -a; source .env set +a
 
