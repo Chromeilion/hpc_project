@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --partition=THIN
 #SBATCH --job-name=c_testing
-#SBATCH --ntasks-per-node=24
-#SBATCH --ntasks=48
+#SBATCH --ntasks-per-node=15
+#SBATCH --ntasks=30
 #SBATCH --exclusive
 #SBATCH --mem=15gb
 #SBATCH --time=00:15:00

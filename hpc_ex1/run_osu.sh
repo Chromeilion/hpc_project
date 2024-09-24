@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --partition=THIN
 #SBATCH --job-name=run_osu_bcast_barrier
-#SBATCH --ntasks-per-node=12
-#SBATCH --ntasks=24
+#SBATCH --ntasks-per-node=24
+#SBATCH --ntasks=48
 #SBATCH --exclusive
 #SBATCH --mem=15gb
 #SBATCH --time=00:15:00

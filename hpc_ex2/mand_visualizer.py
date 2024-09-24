@@ -57,7 +57,7 @@ def main():
     zoom = 38
     frames = 1
     m = MandRunner(os.environ["MAND_LOC"])
-    iters = 30000
+    iters = 1000
     window = (1000, 1000)
     out_loc = "./frames"
     vid_out = "./video.mp4"

@@ -1,5 +1,6 @@
 import json
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 def main():
@@ -16,7 +17,7 @@ def main():
         res_o = 0
         res_c = sum(custom[no_processors]) / len(custom[no_processors])
         for it in range(len(osu[no_processors])):
-            res_o += osu[no_processors][it][3][1]
+            res_o += osu[no_processors][it][6][1]
         res_o /= len(osu[no_processors])
         osu_avgs.append(res_o)
         c_avgs.append(res_c*1e+6)
@@ -30,7 +31,15 @@ def main():
     ax.set_xlabel("Number of Processes")
     ax.set_title("Ring Broadcast Algorithm Performance")
     fig.legend(loc="center right")
-    fig.show()
+    Path("figs/").mkdir(exist_ok=True)
+    fig.savefig("figs/c_fig.png")
+
+    fig, ax = plt.subplots()
+    ax.plot(x, c_avgs)
+    ax.set_ylabel("Latency (us)")
+    ax.set_xlabel("Number of Processes")
+    ax.set_title("Custom Ring Broadcast Algorithm Performance")
+    fig.savefig("figs/c_fig_solo.png")
 
 
 if __name__ == "__main__":

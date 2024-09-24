@@ -50,9 +50,9 @@ int main() {
                 MPI_COMM_WORLD,
                 MPI_STATUS_IGNORE);
     }
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     if (world_rank == 1) {
+        end = clock();
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
         FILE *fp;
         fp = fopen("all_stuffs.txt", "w");
         write_arr(res, world_size, fp);

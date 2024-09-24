@@ -95,7 +95,7 @@ def main():
     coords: coord_t = (-0.757, -0.0555, -0.747, -0.063)
     no_its = 4
     saveloc = "./the_results_of_mand.json"
-    no_cpus = int(os.environ["SLURM_NTASKS_PER_NODE"])
+    no_cpus = 6
     m = MandRunner(os.environ["MAND_LOC"])
 
     weak_results = [
