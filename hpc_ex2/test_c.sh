@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --partition=THIN
-#SBATCH --job-name=m_testing
+#SBATCH --job-name=c_testing
 #SBATCH --ntasks-per-node=24
-#SBATCH --ntasks=24
+#SBATCH --ntasks=48
 #SBATCH --exclusive
 #SBATCH --mem=15gb
 #SBATCH --time=00:15:00
@@ -13,4 +13,4 @@ module load "$MPI_MODULE"
 
 # Add osu to the path for ease of use
 PATH=$PATH:${OSU_COMPILED_PATH}/libexec/osu-micro-benchmarks/mpi/collective
-python3 run_tests_mand.py
+python3 run_tests_circ.py

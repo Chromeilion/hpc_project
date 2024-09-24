@@ -40,18 +40,18 @@ def main(osu_loc: Optional[str] = None, *_, **__):
     osu_path = Path(osu_loc)
     base_command = [
         "mpirun", "--map-by", "NODE", "--mca",
-        "coll_tuned_use_dynamic_rules", "true", "--mca",
-        "coll_tuned_bcast_algorithm"
+        "coll_tuned_use_dynamic_rules", "true", "--mca"
     ]
-    algorithms = ["0", "2", "3"]
+    algorithms = ["1", "2", "3"]
 
-    tasks = ["osu_bcast", "osu_scatter"]
-    no_its = 4
+    tasks = [("osu_bcast", "coll_tuned_bcast_algorithm"),
+             ("osu_gather", "coll_tuned_gather_algorithm")]
+    no_its = 10
     saveloc = "./the_results_of_osu.json"
     no_cpus = int(os.environ["SLURM_NTASKS_PER_NODE"])
 
     resdic = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-    for task in tasks:
+    for (task, alg_flag) in tasks:
         print(f"Doing task: {task}")
         for alg in algorithms:
             print(f"Testing algorithm: {alg}")
@@ -59,8 +59,8 @@ def main(osu_loc: Optional[str] = None, *_, **__):
                 print(f"No processes: {no_processes}")
                 for _ in range(no_its):
                     command = (
-                            base_command+[alg] +
-                            ["-n", str(no_processes)]+[osu_path/task]
+                            base_command+[alg_flag]+[alg] +
+                            ["-np", str(no_processes)]+[osu_path/task]
                     )
                     result, _ = subprocess.Popen(
                         command,

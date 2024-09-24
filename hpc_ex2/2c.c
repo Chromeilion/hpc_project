@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <stdbool.h>
+
 
 // How many times to iterate the threshold T
 double NO_T_STEPS = 3;
@@ -21,8 +23,8 @@ typedef struct {
     pixel *pxl; // Actual pixel object
     unsigned int iter_no; // The current iteration of the pixel
     bool completed; // Whether the pixel has been fully computed
-    complex double c_data; // The computed complex value of the pixel
-    complex double z_data; // Computed value for the current iteration
+    complex long double c_data; // The computed complex value of the pixel
+    complex long double z_data; // Computed value for the current iteration
 } unfinished_pixel;
 
 void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char *image_name)
@@ -68,16 +70,16 @@ double t_func(const unsigned int x) {
 }
 
 // The Mandelbrot set function
-void increment_fc(complex double *z, const complex double *c) {
+void increment_fc(complex long double *z, const complex long double *c) {
     *z = cpow(*z, 2) + *c;
 }
 
 // Check whether a point is in the Mandelbrot set using a number of iterations T.
-unsigned short int in_m(complex double *z,
-                        const complex double *c,
+unsigned short int in_m(complex long double *z,
+                        const complex long double *c,
                         const unsigned short int T) {
     unsigned short int i = 0;
-    while (cabs(*z) < 2 && i < T) {
+    while (cabsl(*z) < 2 && i < T) {
         increment_fc(z, c);
         ++i;
     }
@@ -86,9 +88,9 @@ unsigned short int in_m(complex double *z,
 
 // Check whether a given pixel is in the set and return a bounded output.
 void pxl_in_m(unfinished_pixel* pxl,
-                       const unsigned int *T) {
-    complex double *z_val = &pxl->z_data;
-    const complex double *c_val = &pxl->c_data;
+              const unsigned int *T) {
+    complex long double *z_val = &pxl->z_data;
+    const complex long double *c_val = &pxl->c_data;
     unsigned int iter_to_do = *T - pxl->iter_no;
     unsigned short int iter = in_m(z_val, c_val, iter_to_do);
     pxl->iter_no += iter;
@@ -200,6 +202,14 @@ int save_to_image(pixel *pixels, unsigned const int arr_len,
     return 0;
 }
 
+// Print an array of pixels
+int print_array(pixel *pixels, unsigned const int arr_len) {
+    for (unsigned int i = 0; i < arr_len; ++i) {
+        printf("%u ", pixels[i].data);
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 7) {
         printf("Please specify all required arguments!!!");
@@ -218,11 +228,15 @@ int main(int argc, char *argv[]) {
     const int n_x = (const int)n_x_;
     const int n_y = (const int)n_y_;
 
-    const float x_l = strtof(argv[3], NULL);
-    const float y_l = strtof(argv[4], NULL);
-    const float x_r = strtof(argv[5], NULL);
-    const float y_r = strtof(argv[6], NULL);
-    const long i_max_ = strtol(argv[7], NULL, 10);
+    long double x_l;
+    sscanf(argv[3], "%Lf", &x_l);
+    long double y_l;
+    sscanf(argv[4], "%Lf", &y_l);
+    long double x_r;
+    sscanf(argv[5], "%Lf", &x_r);
+    long double y_r;
+    sscanf(argv[6], "%Lf", &y_r);
+    long i_max_ = strtol(argv[7], NULL, 10);
     if (i_max_ > USHRT_MAX || i_max_ < 0) {
         printf("The provided iteration no (I) is too large or less than "
                "zero!!!");
@@ -239,7 +253,7 @@ int main(int argc, char *argv[]) {
     run_calculations_iter(pxls, &bottom_left, &top_right, n_x, n_y,
                           arr_len, &i_max);
     save_to_image(pxls, arr_len, n_x, n_y);
-
+    print_array(pxls, arr_len);
     free(pxls);
     return 0;
 }

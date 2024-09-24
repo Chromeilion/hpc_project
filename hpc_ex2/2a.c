@@ -1,6 +1,7 @@
 #include <mpi.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 
 // Append an array to a given file.
@@ -28,17 +29,38 @@ int main() {
     int before = world_rank - 1;
     if (before == -1) {before = world_size-1;}
     int after = (world_rank + 1) % world_size;
-    int buf = my_msg;
     int i;
-    for (i = 0; i < world_size; ++i) {
-        MPI_Send(&buf, 1, MPI_INT, before, world_rank, MPI_COMM_WORLD);
-        MPI_Recv(&buf, 1, MPI_INT, after, after, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        res[(after+i) % world_size] = buf;
+    clock_t start, end;
+    double cpu_time_used;
+    if (world_rank == 1) {
+        start = clock();
     }
+    for (i = 0; i < world_size-1; ++i) {
+        MPI_Sendrecv(
+                &res[(after+i-1+world_size)%world_size],
+                1,
+                MPI_INT,
+                before,
+                world_rank,
+                &res[(after+i)%world_size],
+                1,
+                MPI_INT,
+                after,
+                after,
+                MPI_COMM_WORLD,
+                MPI_STATUS_IGNORE);
+    }
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     if (world_rank == 1) {
         FILE *fp;
         fp = fopen("all_stuffs.txt", "w");
         write_arr(res, world_size, fp);
+
+        FILE *fp2;
+        fp2 = fopen("time_taken.txt", "w");
+        fprintf(fp2, "%f\n", cpu_time_used);
+        fclose(fp2);
     }
     free(res);
     MPI_Finalize();
