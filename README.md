@@ -1,4 +1,4 @@
-#HPC Project
+# HPC Project
 By Uros Zivanovic
 All files for each respective exercise are located in their respective folder.
 
@@ -21,3 +21,10 @@ Additionally, the ```MAND_LOC``` environment variable should point to the locati
 Once all the statistics have been computed, they are saved in json files, which can then be rendered into plots using ```plot_c.py``` and ```plot_m.py```. 
 To run these with Python make sure to install numpy and matplotlib.
 
+# Misc. Scripts
+For Ex. 2, there are some additional scripts provided. 
+These aren't exactly a part of the exercise, but serve as supplemantary material to extend the exercise a bit.
+Specifically, ```mand_visualizer.py``` is very fun to play around with.
+It allows you to specify a coordinate and zoom level, and then render either an image at that location, or even make a video zooming into that location.
+The script is a bit rough, so all parameters are set at the start of the main function.
+However, if you'd like to try it out, simply make sure ```MAND_LOC``` is set to the location of the 2c binary, install pillow, tqdm, matplotlib, and numpy, and run it.
