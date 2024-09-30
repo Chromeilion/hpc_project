@@ -8,8 +8,8 @@ from pathlib import Path
 def weak_plots(resdic, savepath):
     weak = resdic["weak_scaling"]
     n_iters = len(weak)
-    nprocs = len(weak[0]['weak_window_scaling'])
-    procs_arr = np.array([int(i) for i in weak[0]['weak_window_scaling'].keys()])
+    nprocs = len(weak[0]['weak_iter_scaling'])
+    procs_arr = np.array([int(i) for i in weak[0]['weak_iter_scaling'].keys()])
     avg_dict = defaultdict(lambda: np.zeros(shape=nprocs))
     for i in weak:
         for test_key, test_vals in i.items():
@@ -50,7 +50,7 @@ def create_plots(resdic: dict):
     savepath = Path("figs/")
     savepath.mkdir(exist_ok=True)
     weak_plots(resdic, savepath)
-    strong_plots(resdic, savepath)
+    #strong_plots(resdic, savepath)
 
 
 def main():

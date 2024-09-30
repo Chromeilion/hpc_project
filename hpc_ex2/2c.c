@@ -7,7 +7,7 @@
 
 
 // How many times to iterate the threshold T
-double NO_T_STEPS = 3;
+double NO_T_STEPS = 10;
 double T_MAX = 1;
 double T_BASE = 3;
 
@@ -147,7 +147,7 @@ bool run_calculations_iter(pixel *arr,
     unsigned int completed;
     // Would love to multithread this but with the current implementation
     // it would go horribly.
-    for (unsigned int j = 0; j <= NO_T_STEPS; ++j) {
+    for (unsigned int j = 1; j <= NO_T_STEPS; ++j) {
         current_iter = (unsigned int)round(*T * t_func(j));
         completed = run_calculations(job_array,
                                      bottom_left,

@@ -1,6 +1,10 @@
 import os
 import subprocess
 import time
+from subprocess import TimeoutExpired
+import pickle
+import psutil
+import matplotlib.pyplot as plt
 
 
 coord_t = tuple[float, float, float, float]
@@ -17,13 +21,26 @@ class MandRunner:
             window: window_t,
             n_iter: n_iter_t
             ):
+        start = time.time()
         mand_r = subprocess.Popen(
             self._create_command(coords, window, n_iter),
             stdout=subprocess.PIPE,
             env=os.environ,
             text=True
-        ).communicate()
-        return mand_r
+        )
+#        cpu = []
+#        times = []
+#        while mand_r.poll() is None:
+#            cpu.append(psutil.cpu_percent())
+#            times.append(time.time()-start)
+#            try:
+#                mand_r = mand_r.communicate(input=None, timeout=0.05)
+#                break
+#            except TimeoutExpired:
+#                continue
+#        with open("times.pkl", "wb") as f:
+#            pickle.dump([times, cpu], f)
+        return mand_r.communicate()
 
     def _create_command(self,
                         coords: coord_t, window: window_t, n_iter: n_iter_t):

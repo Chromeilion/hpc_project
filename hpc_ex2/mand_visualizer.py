@@ -53,11 +53,12 @@ def render(midpoint, zoom, no_frames, window, iters, savefolder, m, vid_out):
 
 def main():
     start = (np.longdouble(-0.77817645), np.longdouble(0.129919014))
-    start = (np.longdouble(0.37894144929305185), np.longdouble(0.0911550893988533))
-    zoom = 38
+    start = (np.longdouble(-0.7836359319044282), np.longdouble(0.14125915596378036))
+#    start = (np.longdouble(0.37894144929305185), np.longdouble(0.0911550893988533))
+    zoom = 5
     frames = 1
     m = MandRunner(os.environ["MAND_LOC"])
-    iters = 1000
+    iters = 2000
     window = (1000, 1000)
     out_loc = "./frames"
     vid_out = "./video.mp4"

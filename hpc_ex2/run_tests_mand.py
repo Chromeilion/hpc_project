@@ -20,18 +20,18 @@ def test_weak(n_processors, coord: coord_t, weak_window_iters: int,
     Test weak scaling on the Mandelbrot algorithm.
     """
     resdic = {}
-    print("Testing weak window scaling")
-    resdic["weak_window_scaling"] = test_window_scaling_weak(
-        n_processors, coord, weak_window_iters, m
-    )
+#    print("Testing weak window scaling")
+#    resdic["weak_window_scaling"] = test_window_scaling_weak(
+#        n_processors, coord, weak_window_iters, m
+#    )
     print("Testing weak iter scaling")
     resdic["weak_iter_scaling"] = test_iter_scaling_weak(
         n_processors, coord, weak_iter_window, m
     )
-    print("Testing full weak scaling")
-    resdic["weak_scaling_full"] = test_full_scaling_weak(
-        n_processors, coord, m
-    )
+#    print("Testing full weak scaling")
+#    resdic["weak_scaling_full"] = test_full_scaling_weak(
+#        n_processors, coord, m
+#    )
     return resdic
 
 
@@ -56,7 +56,7 @@ def test_iter_scaling_weak(n_processors: int, coord: coord_t,
     times = {}
     for n_p in range(1, n_processors+1):
         os.environ["OMP_NUM_THREADS"] = str(n_p)
-        ni_size = n_p * iters_per_p
+        ni_size = iters_per_p**n_p
         times[n_p] = time_run(coord, weak_iter_window,
                               n_iter=ni_size,
                               m=m)
@@ -75,7 +75,7 @@ def test_window_scaling_weak(n_processors,
     times = {}
     for n_p in range(1, n_processors+1):
         os.environ["OMP_NUM_THREADS"] = str(n_p)
-        w_size = n_p * pxls_per_p
+        w_size = pxls_per_p*n_p
         times[n_p] = time_run(coord, (w_size, w_size), n_iter=n_iter,
                               m=m)
     return times
@@ -93,7 +93,7 @@ def test_strong(n_processors: int, coords: coord_t, window: window_t,
 
 def main():
     coords: coord_t = (-0.757, -0.0555, -0.747, -0.063)
-    no_its = 4
+    no_its = 1
     saveloc = "./the_results_of_mand.json"
     no_cpus = 6
     m = MandRunner(os.environ["MAND_LOC"])
@@ -102,10 +102,11 @@ def main():
         test_weak(no_cpus, coords, WEAK_WINDOW_ITERS, WEAK_ITER_WINDOW, m)
         for _ in range(no_its)
     ]
-    strong_results = [
-        test_strong(n_processors=no_cpus, coords=coords, window=STRONG_WINDOW,
-                    n_iter=STRONG_ITERS, m=m) for _ in range(no_its)
-    ]
+    strong_results = None
+#    strong_results = [
+#        test_strong(n_processors=no_cpus, coords=coords, window=STRONG_WINDOW,
+#                    n_iter=STRONG_ITERS, m=m) for _ in range(no_its)
+#    ]
     resdic = {
         "weak_scaling": weak_results,
         "strong_scaling": strong_results

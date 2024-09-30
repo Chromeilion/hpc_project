@@ -70,9 +70,22 @@ def main(osu_loc: Optional[str] = None, *_, **__):
                     parsed = parse_osu_output(result)
                     resdic[task][alg][no_processes].append(parsed)
 
+    lat_command = ["mpirun", "--map-by", "NODE"]
+    lat_loc = str((Path(os.getenv('OSU_COMPILED_PATH')) /
+               "libexec/osu-micro-benchmarks/mpi/pt2pt/osu_latency"))
+    for _ in range(no_its):
+        command = lat_command + ["-np", "2", lat_loc]
+        result, _ = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            env=os.environ
+        ).communicate()
+        parsed = parse_osu_output(result)
+        parsed[0] = ["Size", "Latency (us)"]
+        resdic["naive model"][1][2].append(parsed)
+
     with open(saveloc, 'w') as f:
         json.dump(resdic, f)
-
 
 if __name__ == "__main__":
     parser = ap.ArgumentParser()

@@ -7,12 +7,12 @@ from pathlib import Path
 
 alg_map_bcast = {
     "0": "ignore",
-    "1": "linear",
-    "2": "double ring",
-    "3": "recursive doubling",
-    "4": "bruck",
-    "5": "two proc only",
-    "6": "tree"
+    "1": "basic linear",
+    "2": "chain",
+    "3": "pipeline",
+    "4": "split binary tree",
+    "5": "binary tree",
+    "6": "binomial tree"
 }
 alg_map_gather = {
     "0": "ignore",
@@ -20,7 +20,30 @@ alg_map_gather = {
     "2": "binomial",
     "3": "linear with synchronization"
 }
-alg_maps = {"osu_bcast": alg_map_bcast, "osu_gather": alg_map_gather}
+alg_maps = {"osu_bcast": alg_map_bcast, "osu_gather": alg_map_gather,
+            "naive model": {"1": "naive model"}}
+
+
+def create_bcast(bb, lat):
+    simple_model = defaultdict(lambda: defaultdict(dict))
+    for n_proc in bb['basic linear'].keys():
+        simple_model[n_proc]['columns'] = bb['basic linear'][n_proc]['columns']
+        simple_model[n_proc]['msg_size'] = {}
+        for msg_size, lat_ in lat['naive model'][2]['msg_size'].items():
+            simple_model[n_proc]['msg_size'][msg_size] = lat_ * n_proc-1
+    bb['naive model'] = simple_model
+    return bb
+
+
+def create_gather(gg, lat):
+    simple_model = defaultdict(lambda: defaultdict(dict))
+    for n_proc in gg['basic linear'].keys():
+        simple_model[n_proc]['columns'] = gg['basic linear'][n_proc]['columns']
+        simple_model[n_proc]['msg_size'] = {}
+        for msg_size, lat_ in lat['naive model'][2]['msg_size'].items():
+            simple_model[n_proc]['msg_size'][msg_size] = lat_ * n_proc-1
+    gg['naive model'] = simple_model
+    return gg
 
 
 def main():
@@ -31,6 +54,8 @@ def main():
         avgs = calc_averages(res)
         savepath = Path("../figs")
         savepath.mkdir(exist_ok=True)
+        avgs = {'osu_bcast': create_bcast(avgs['osu_bcast'], avgs['naive model']),
+                'osu_gather': create_gather(avgs['osu_gather'], avgs['naive model'])}
         for operation, op_res in avgs.items():
             bfig, bax = plt.subplots()
             bax.set_ylabel("Avg. Normalized Latency(us)")
