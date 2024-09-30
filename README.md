@@ -10,7 +10,7 @@ Once the benchmarks are compiled simply run ```run_osu.sh``` with the same .env 
 
 # Ex. 2
 The code here is managed through cmake. 
-There is a simply compilation script which can used called ```compile.sh```. 
+There is a simple compilation script which can used called ```compile.sh```. 
 It also expects a .env variable with ```MPI_MODULE``` defined.
 If the version of cmake has been updated on ORFEO, this script may throw an error which can be fixed by simply changing the version of cmake the script loads to the latest one.
 
